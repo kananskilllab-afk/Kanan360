@@ -8,6 +8,7 @@ import { PublicTopBar } from '@/components/public/PublicTopBar';
 import { PublicFloorSelector } from '@/components/public/PublicFloorSelector';
 import { PublicToolbar } from '@/components/public/PublicToolbar';
 import { PublicAreaPanel } from '@/components/public/PublicAreaPanel';
+import { StreetViewReveal } from '@/components/public/StreetViewReveal';
 import { usePublicSceneStore } from '@/store/publicSceneStore';
 
 // The public site's shell: one persistent <Canvas> that survives every
@@ -75,6 +76,7 @@ export function PublicLayout() {
       <PublicFloorSelector />
       <PublicToolbar />
       <PublicAreaPanel />
+      <StreetViewReveal />
     </div>
   );
 }

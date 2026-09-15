@@ -4,6 +4,7 @@ import { ContactShadows } from '@react-three/drei';
 import type { PublicBranch } from '@/services/public/publicApi';
 import { BranchBuilding } from '@/three/BranchBuilding';
 import { usePublicSceneStore } from '@/store/publicSceneStore';
+import { BRANCH_STREET_VIEW } from '@/lib/branchStreetView';
 
 const RADIUS = 13;
 const ANGLE_STEP = 0.44;
@@ -12,6 +13,7 @@ export function BranchSelectionScene({ branches }: { branches: PublicBranch[] })
   const navigate = useNavigate();
   const cameraControls = usePublicSceneStore((s) => s.cameraControls);
   const resetSignal = usePublicSceneStore((s) => s.resetSignal);
+  const setPendingReveal = usePublicSceneStore((s) => s.setPendingReveal);
 
   const positions = useMemo<[number, number, number][]>(() => {
     const mid = (branches.length - 1) / 2;
@@ -38,7 +40,16 @@ export function BranchSelectionScene({ branches }: { branches: PublicBranch[] })
   // fly-toward-building leg followed by a separate hop reads as two
   // disconnected moves, not one.
   function handleSelect(branch: PublicBranch) {
-    navigate(`/branch/${branch.code}`);
+    const streetView = BRANCH_STREET_VIEW[branch.code];
+    const targetPath = streetView?.floorNumber
+      ? `/branch/${branch.code}?floor=${streetView.floorNumber}`
+      : `/branch/${branch.code}`;
+
+    if (streetView) {
+      setPendingReveal({ title: branch.name, embedUrl: streetView.embedUrl, caption: streetView.caption, targetPath });
+      return;
+    }
+    navigate(targetPath);
   }
 
   return (

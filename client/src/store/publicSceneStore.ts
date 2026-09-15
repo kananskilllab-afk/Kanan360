@@ -49,6 +49,13 @@ interface PublicSceneState {
   // the toolbar trying to know scene-specific framing itself.
   resetSignal: number;
   requestReset: () => void;
+
+  // Set by BranchSelectionScene when a clicked building has a real Street
+  // View on file (see branchStreetView.ts) — StreetViewReveal.tsx (a
+  // <Canvas> sibling, DOM overlays can't live inside R3F) shows the
+  // full-screen reveal and navigates to targetPath itself once it's done.
+  pendingReveal: { title: string; embedUrl: string; caption: string; targetPath: string } | null;
+  setPendingReveal: (reveal: PublicSceneState['pendingReveal']) => void;
 }
 
 export const usePublicSceneStore = create<PublicSceneState>((set) => ({
@@ -74,4 +81,7 @@ export const usePublicSceneStore = create<PublicSceneState>((set) => ({
 
   resetSignal: 0,
   requestReset: () => set((s) => ({ resetSignal: s.resetSignal + 1 })),
+
+  pendingReveal: null,
+  setPendingReveal: (pendingReveal) => set({ pendingReveal }),
 }));
