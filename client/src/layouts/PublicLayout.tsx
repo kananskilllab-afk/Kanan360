@@ -27,10 +27,10 @@ export function PublicLayout() {
   }, [location.pathname, setSelectedAreaCode]);
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-[#e7e6dd]">
+    <div className="relative h-screen w-screen overflow-hidden bg-[#f3dcb8]">
       <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 9, 20], fov: 42, near: 0.1, far: 200 }}>
-        <color attach="background" args={['#e7e6dd']} />
-        <fog attach="fog" args={['#e7e6dd', 30, 90]} />
+        <color attach="background" args={['#eab278']} />
+        <fog attach="fog" args={['#eab278', 34, 95]} />
         <hemisphereLight args={['#fff5e2', '#d6d0bd', 0.55]} />
         <directionalLight
           position={[14, 20, 10]}
