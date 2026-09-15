@@ -19,10 +19,12 @@
 // are trustworthy even though there's no vector/CAD file to trace
 // directly. It is a careful reconstruction of relative position and true
 // room proportions, not a millimeter-exact CAD trace: exact wall-to-wall
-// adjacency wasn't recoverable from a rasterized drawing. The Ground
-// Floor has no drawing (only areas were given), so it still uses the
-// procedural layout. Swapping in a real GLB later touches only this
-// script's `layout` values and client/src/three/layout.ts — nothing else.
+// adjacency wasn't recoverable from a rasterized drawing. Swapping in a
+// real GLB later touches only this script's `layout` values and
+// client/src/three/layout.ts — nothing else.
+//
+// This branch occupies only the 2nd floor of the building — no ground
+// floor presence.
 import { connectDb, disconnectDb } from '../config/db.js';
 import { Area, Branch, Department, Employee, Floor, Seat } from '../models/index.js';
 import { recomputeBranchRollups, recomputeFloorArea } from '../services/rollup.service.js';
@@ -149,13 +151,6 @@ const FLOOR_2_CIRCULATION: RoomSpec[] = [
   },
 ];
 
-// No drawing was provided for the Ground Floor (only its two areas and
-// their carpet areas), so it keeps the procedural layout.
-const GROUND_FLOOR_ROOMS: RoomSpec[] = [
-  { code: 'A001', name: 'Pre-Counseling (Shop 51)', type: 'MEETING_ROOM', dept: 'ADM', areaSqFt: 223.63, capacity: 9, inUse: true, staffCount: 3, designation: 'Admissions Counselor' },
-  { code: 'A002', name: 'Mezzanine Floor', type: 'CABIN', dept: 'OPS', areaSqFt: 223.63, capacity: 1, inUse: false, staffCount: 0 },
-];
-
 let employeeSeq = 9000;
 function nextEmployeeCodes() {
   employeeSeq += 1;
@@ -217,8 +212,9 @@ async function main() {
   let totalSeats = 0;
   let totalEmployees = 0;
 
+  // This branch only occupies the 2nd floor of the building — no ground
+  // floor presence, despite an earlier (incorrect) pass modelling one.
   const floorDefs = [
-    { name: 'Ground Floor', floorNumber: 1, rooms: GROUND_FLOOR_ROOMS },
     { name: '2nd Floor', floorNumber: 2, rooms: [...FLOOR_2_ROOMS, ...FLOOR_2_CIRCULATION] },
   ];
 

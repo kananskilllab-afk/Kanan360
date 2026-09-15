@@ -1,9 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePublicSceneStore } from '@/store/publicSceneStore';
 
-const REVEAL_MS = 2800;
+// How long the panorama stays on screen once it's actually visible --
+// measured from the iframe's load event, not from the click, so slow
+// network doesn't eat into how long the user actually gets to see it.
+const HOLD_MS = 4200;
+// If the iframe never fires `load` (blocked, very slow connection), don't
+// get stuck on a black screen forever.
+const LOAD_FALLBACK_MS = 3000;
 
 // A brief full-screen look at the real building's Street View before the
 // camera carries into its 3D floor — see branchStreetView.ts for which
@@ -15,15 +21,26 @@ export function StreetViewReveal() {
   const reveal = usePublicSceneStore((s) => s.pendingReveal);
   const setPendingReveal = usePublicSceneStore((s) => s.setPendingReveal);
   const navigate = useNavigate();
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+  }, [reveal]);
 
   useEffect(() => {
     if (!reveal) return;
+    const fallback = setTimeout(() => setLoaded(true), LOAD_FALLBACK_MS);
+    return () => clearTimeout(fallback);
+  }, [reveal]);
+
+  useEffect(() => {
+    if (!reveal || !loaded) return;
     const timer = setTimeout(() => {
       navigate(reveal.targetPath);
       setPendingReveal(null);
-    }, REVEAL_MS);
+    }, HOLD_MS);
     return () => clearTimeout(timer);
-  }, [reveal, navigate, setPendingReveal]);
+  }, [reveal, loaded, navigate, setPendingReveal]);
 
   return (
     <AnimatePresence>
@@ -43,10 +60,11 @@ export function StreetViewReveal() {
             style={{ border: 0 }}
             initial={{ scale: 1.18 }}
             animate={{ scale: 1 }}
-            transition={{ duration: REVEAL_MS / 1000, ease: 'easeOut' }}
+            transition={{ duration: (HOLD_MS + LOAD_FALLBACK_MS) / 1000, ease: 'easeOut' }}
             allowFullScreen
             loading="eager"
             referrerPolicy="strict-origin-when-cross-origin"
+            onLoad={() => setLoaded(true)}
           />
 
           <motion.div
