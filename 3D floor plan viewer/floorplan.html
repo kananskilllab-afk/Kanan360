@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iscon Janmahaal — 3D Floor Plan</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.184.0/build/three.module.js",
+    "three/addons/controls/OrbitControls.js": "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js",
+    "three/addons/exporters/OBJExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js",
+    "three/addons/exporters/GLTFExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js"
+  },
+  "integrity": {
+    "https://unpkg.com/three@0.184.0/build/three.module.js": "sha384-8FCZ1eVO6it4+pbec2aDtnTrwjWXZLJRC+MAGCIPDgsYnUrl/E0A2YlF8ioMKI/J",
+    "https://unpkg.com/three@0.184.0/build/three.core.js": "sha384-dw2ooPewaEIrAgl6oFDBmmBWCE9oW9LxRGcfwZ0hLvEprzo202wXl7vCYHRlSnOT",
+    "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js": "sha384-4rziNxOBZKQ69i+w+f89KJ55TCYquwchVbByQwmaOeIOXdOU2PLDn3kOfXHwIJC9",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js": "sha384-nbwtoZENJD3Vq+ACK0CuGQdPMuDWHkamC2KJD70EV5nfg6jQjfppKOea07YJN+N3",
+    "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js": "sha384-VofkvpG6HERhFCYbsUOHeNXBCqID2nfqkQqnVzE1jc/oPcz+qJ13ADdXH08hE+cQ"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Archivo",system-ui,sans-serif;
+    color:#1d2326;background:#efece4;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden;
+  }
+  a{color:#1d2326}a:hover{color:#8a4b2a}
+  three-d-stage:not(:defined){visibility:hidden}
+  header{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+    padding:18px 26px 14px;border-bottom:1px solid #d6d0c2;flex:0 0 auto;flex-wrap:wrap;
+  }
+  .title{display:flex;flex-direction:column;gap:4px}
+  .title h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .title p{margin:0;font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#7a7569}
+  .meta{display:flex;gap:26px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.04em;color:#7a7569}
+  .meta div{display:flex;flex-direction:column;gap:3px}
+  .meta b{font-family:"Archivo";font-size:14px;font-weight:600;letter-spacing:0;color:#1d2326}
+  main{position:relative;flex:1 1 auto;min-height:0}
+  three-d-stage{position:absolute;inset:0;width:auto!important;height:auto!important}
+  #labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  #labels b{
+    position:absolute;transform:translate(-50%,-50%);white-space:nowrap;
+    display:flex;flex-direction:column;align-items:center;gap:1px;
+    background:rgba(250,248,243,.92);border:1px solid rgba(29,35,38,.28);
+    padding:3px 8px 4px;font-size:11px;font-weight:600;letter-spacing:.01em;color:#1d2326;
+  }
+  #labels b i{font-style:normal;font-family:"JetBrains Mono",monospace;font-size:8.5px;font-weight:400;color:#7a7569}
+  #labels b.use{border-color:rgba(138,75,42,.55);box-shadow:inset 0 -2px 0 rgba(138,75,42,.5)}
+  #labels b.ctx{background:rgba(240,237,229,.82);border-style:dashed;border-color:rgba(29,35,38,.3);color:#6c7175;font-weight:500}
+  .panel{
+    position:absolute;left:22px;bottom:54px;width:222px;
+    background:rgba(249,247,242,.92);backdrop-filter:blur(8px);
+    border:1px solid #d6d0c2;padding:14px 15px 15px;
+  }
+  .panel h2{margin:0 0 10px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7a7569;font-weight:500}
+  .legend{display:flex;flex-direction:column;gap:7px;margin:0 0 14px}
+  .legend div{display:flex;align-items:center;gap:9px;font-size:12.5px;line-height:1.25}
+  .sw{width:15px;height:15px;flex:0 0 auto;border:1px solid rgba(0,0,0,.2)}
+  .toggles{display:flex;flex-direction:column;gap:6px;border-top:1px solid #dfd9cb;padding-top:12px}
+  .toggles label{display:flex;align-items:center;gap:9px;font-size:12.5px;cursor:pointer}
+  .toggles input{accent-color:#8a4b2a;width:14px;height:14px;margin:0}
+  .rooms{
+    position:absolute;right:22px;top:22px;width:262px;max-height:calc(100% - 120px);overflow:auto;
+    background:rgba(249,247,242,.92);backdrop-filter:blur(8px);border:1px solid #d6d0c2;padding:13px 6px 13px 15px;
+  }
+  .rooms h2{margin:0 0 9px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#7a7569;font-weight:500}
+  .rooms ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+  .rooms li{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:6px 12px 6px 12px;font-size:11.5px;border-bottom:1px solid #e6e0d2;position:relative}
+  .rooms li:before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;border-radius:50%;background:#c8c2b4}
+  .rooms li.on:before{background:#8a4b2a}
+  .rooms li em{font-style:normal;display:flex;flex-direction:column;gap:2px}
+  .rooms li small{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.02em;color:#8d887c}
+  .rooms .note{margin:10px 12px 0 0;font-size:10px;line-height:1.4;color:#8d887c;border-top:1px solid #e6e0d2;padding-top:8px}
+  .rooms li:last-child{border-bottom:0}
+  .rooms span{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:-.02em;color:#7a7569;white-space:nowrap}
+  @media (max-width:900px){.rooms{display:none}.panel{left:12px;bottom:48px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="title">
+    <h1>Iscon Janmahaal — Office &amp; Coaching Centre</h1>
+    <p>Floor plan layout · Drawing 01 · Rev 07 · 04-01-2025</p>
+  </div>
+  <div class="meta">
+    <div>2nd floor carpet<b>3,600 sq.ft</b></div>
+    <div>Branch total<b>4,047.26 sq.ft</b></div>
+    <div>Teaching seats<b>185 + 23 lab</b></div>
+    <div>Areas in use<b>5 of 16</b></div>
+  </div>
+</header>
+<main>
+  <three-d-stage name="iscon-janmahaal-floor" background="#efece4"></three-d-stage>
+  <div id="labels"></div>
+  <div class="panel">
+    <h2>Legend</h2>
+    <div class="legend">
+      <div><i class="sw" style="background:#ded7c9"></i>Masonry wall · 9'6"</div>
+      <div><i class="sw" style="background:#6b4429"></i>Partition base · 3'6"</div>
+      <div><i class="sw" style="background:#b3c6cb"></i>Glazing to ceiling</div>
+      <div><i class="sw" style="background:#7d7a6d"></i>Carpet · teaching areas</div>
+      <div><i class="sw" style="background:#d6c7a3"></i>Area currently in use</div>
+      <div><i class="sw" style="background:#cac5b8"></i>Common circulation · outside demise</div>
+    </div>
+    <h2>View</h2>
+    <div class="toggles">
+      <label><input type="checkbox" id="t-furn" checked>Furniture</label>
+      <label><input type="checkbox" id="t-labels" checked>Room labels</label>
+      <label><input type="checkbox" id="t-glaz" checked>Façade &amp; glazing</label>
+      <label><input type="checkbox" id="t-use" checked>Highlight areas in use</label>
+      <label><input type="checkbox" id="t-common" checked>Common circulation</label>
+    </div>
+  </div>
+  <div class="rooms">
+    <h2>Capacity schedule · sq.ft</h2>
+    <ul id="schedule"></ul>
+    <p class="note">Lift, staircase and the 2100mm passage are common building circulation, outside the premises. Ground floor (pre-counseling 223.63 + mezzanine cabin 223.63 sq.ft) not modelled.</p>
+  </div>
+</main>
+<script src="./three-d-stage.js"></script>
+<script type="module">
+  import * as THREE from 'three';
+  import { buildFloor, roomList, commonList, PLAN_H, CENTER } from './plan-model.js';
+  const stage = document.querySelector('three-d-stage');
+  await stage.ready;
+
+  const opts = { furniture: true, labels: false, glazing: true, useWash: true, common: true };
+  // The starter frames the bounding SPHERE, which wastes the frame on a wide,
+  // flat plan. Fit the real bbox corners in screen space instead.
+  const reframe = (resetDir = false) => {
+    const cam = stage._camera, ctl = stage._controls, obj = stage._object;
+    if (!cam || !ctl || !obj) return;
+    const box = new THREE.Box3().setFromObject(obj);
+    const c = box.getCenter(new THREE.Vector3());
+    ctl.target.copy(c);
+    const dir = resetDir
+      ? new THREE.Vector3(0.34, 0.66, 1).normalize()
+      : cam.position.clone().sub(c).normalize();
+    let dist = cam.position.distanceTo(c);
+    const corners = [];
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) corners.push(new THREE.Vector3(x, y, z));
+    const FILLX = 0.96, FILLY = 0.96;
+    const right = new THREE.Vector3(), up = new THREE.Vector3();
+    for (let i = 0; i < 5; i++) {
+      cam.position.copy(ctl.target).add(dir.clone().multiplyScalar(dist));
+      cam.lookAt(ctl.target);
+      cam.updateMatrixWorld();
+      cam.updateProjectionMatrix();
+      let x0 = 9, x1 = -9, y0 = 9, y1 = -9;
+      for (const p of corners) {
+        const n = p.clone().project(cam);
+        x0 = Math.min(x0, n.x); x1 = Math.max(x1, n.x);
+        y0 = Math.min(y0, n.y); y1 = Math.max(y1, n.y);
+      }
+      dist *= Math.max((x1 - x0) / 2 / FILLX, (y1 - y0) / 2 / FILLY);
+      // centre horizontally only — panning vertically would flatten the view angle
+      if (i < 2) {
+        const halfH = Math.tan((cam.fov * Math.PI) / 360) * dist;
+        cam.matrixWorld.extractBasis(right, up, new THREE.Vector3());
+        ctl.target.add(right.multiplyScalar(((x0 + x1) / 2) * halfH * cam.aspect * 0.6));
+      }
+    }
+    cam.position.copy(ctl.target).add(dir.clone().multiplyScalar(dist));
+    cam.near = Math.max(dist / 100, 0.01);
+    cam.far = dist * 100;
+    cam.updateProjectionMatrix();
+    ctl.update();
+  };
+  const refit = () => {
+    requestAnimationFrame(() => reframe(true));
+    setTimeout(() => reframe(true), 120);
+    setTimeout(() => reframe(true), 400);
+  };
+  const render = () => { stage.setObject(buildFloor(opts)); refit(); };
+  render();
+  let t; new ResizeObserver(() => { clearTimeout(t); t = setTimeout(() => reframe(false), 150); }).observe(stage);
+
+  const bind = (id, key) => document.getElementById(id).addEventListener('change', (e) => {
+    opts[key] = e.target.checked; render();
+  });
+  bind('t-furn', 'furniture');
+  document.getElementById('t-labels').addEventListener('change', (e) => { labelsOn = e.target.checked; });
+  bind('t-glaz', 'glazing');
+  bind('t-use', 'useWash');
+  bind('t-common', 'common');
+
+  const layer = document.getElementById('labels');
+  const tags = [...roomList, ...commonList].map((r) => {
+    const el = document.createElement('b');
+    if (r.use) el.className = 'use';
+    if (!r.a) el.className = 'ctx';
+    el.innerHTML = `${r.n}<i>${r.d.split(' · ')[0]}</i>`;
+    layer.appendChild(el);
+    const FT = 0.3048;
+    const [x1, z1, x2, z2] = r.r;
+    return {
+      el,
+      ctx: !r.a,
+      p: new THREE.Vector3(((x1 + x2) / 2 - CENTER.x) * FT, 8.4 * FT, ((z1 + z2) / 2 - CENTER.z) * FT),
+      a: new THREE.Vector3((x1 - CENTER.x) * FT, 8.4 * FT, ((z1 + z2) / 2 - CENTER.z) * FT),
+      b: new THREE.Vector3((x2 - CENTER.x) * FT, 8.4 * FT, ((z1 + z2) / 2 - CENTER.z) * FT),
+    };
+  });
+  const v = new THREE.Vector3();
+  const panels = [document.querySelector('.panel'), document.querySelector('.rooms')];
+  const hidden = (x, y, rect) => panels.some((p) => {
+    const r = p.getBoundingClientRect();
+    return x > r.left - rect.left - 26 && x < r.right - rect.left + 26 && y > r.top - rect.top - 14 && y < r.bottom - rect.top + 14;
+  });
+  const tick = () => {
+    const cam = stage._camera;
+    const rect = stage.getBoundingClientRect();
+    if (cam && rect.width) {
+      for (const t of tags) {
+        const show = labelsOn;
+        v.copy(t.p).project(cam);
+        const px = (v.x * 0.5 + 0.5) * rect.width, py = (-v.y * 0.5 + 0.5) * rect.height;
+        const wa = t.a.clone().project(cam).x, wb = t.b.clone().project(cam).x;
+        const roomPx = Math.abs(wb - wa) * 0.5 * rect.width;
+        const vis = show && v.z < 1 && roomPx > (t.ctx ? 22 : 46) && !hidden(px, py, rect) && (t.ctx ? opts.common : true);
+        t.el.style.display = vis ? 'flex' : 'none';
+        if (vis) { t.el.style.left = px + 'px'; t.el.style.top = py + 'px'; }
+      }
+    }
+    requestAnimationFrame(tick);
+  };
+  let labelsOn = true;
+  tick();
+
+  document.getElementById('schedule').innerHTML = roomList
+    .map((r) => `<li class="${r.use ? 'on' : 'off'}" title="${r.p || ''}">
+        <em>${r.n.replace(/ · /g, ' ')}<small>${r.c || ''}</small></em>
+        <span>${r.a ? r.a.toLocaleString() : '—'}</span>
+      </li>`)
+    .join('');
+</script>
+</body>
+</html>

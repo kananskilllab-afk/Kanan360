@@ -1,0 +1,21 @@
+{
+  "name": "kanan-baroda",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Kanan Baroda — 3D Branch & Floor Plan Management System",
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev:client": "npm run dev -w client",
+    "dev:server": "npm run dev -w server",
+    "build:client": "npm run build -w client",
+    "build:server": "npm run build -w server",
+    "seed": "npm run seed -w server"
+  },
+  "overrides": {
+    "qs": "6.16.0"
+  }
+}

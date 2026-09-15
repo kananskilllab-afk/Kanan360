@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.tmp-verify/
+*.env
+!*.env.example
+.env.local
+*.local
+.DS_Store
+npm-debug.log*
+coverage/
+.vite/
+.claude/
+.vercel/
