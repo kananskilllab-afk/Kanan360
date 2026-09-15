@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Canvas } from '@react-three/fiber';
 import { Environment, Grid } from '@react-three/drei';
 import { CameraRig } from '@/three/CameraRig';
+import { LandingAtmosphere } from '@/three/LandingAtmosphere';
 import { SCENE } from '@/three/materials';
 import { PublicTopBar } from '@/components/public/PublicTopBar';
 import { PublicFloorSelector } from '@/components/public/PublicFloorSelector';
@@ -30,10 +31,11 @@ export function PublicLayout() {
       <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 9, 20], fov: 42, near: 0.1, far: 200 }}>
         <color attach="background" args={['#e7e6dd']} />
         <fog attach="fog" args={['#e7e6dd', 30, 90]} />
-        <ambientLight intensity={0.6} />
+        <hemisphereLight args={['#fff5e2', '#d6d0bd', 0.55]} />
         <directionalLight
           position={[14, 20, 10]}
           intensity={1.4}
+          color="#fff7ea"
           castShadow
           shadow-mapSize={[2048, 2048]}
           shadow-camera-left={-25}
@@ -41,8 +43,16 @@ export function PublicLayout() {
           shadow-camera-top={25}
           shadow-camera-bottom={-25}
         />
-        <directionalLight position={[-12, 8, -10]} intensity={0.35} />
-        <Environment preset="city" environmentIntensity={0.35} />
+        <directionalLight position={[-12, 8, -10]} intensity={0.32} color="#cfdae6" />
+        {/* Its own Suspense boundary: this fetches an HDR from a public
+            CDN for reflections only — cosmetic, not load-bearing. Without
+            an isolated boundary, a slow or blocked fetch (flaky network,
+            corporate proxy) would suspend the whole scene indefinitely,
+            leaving the entire canvas blank instead of just skipping the
+            sheen. */}
+        <Suspense fallback={null}>
+          <Environment preset="city" environmentIntensity={0.35} />
+        </Suspense>
 
         {/* Always mounted, never remounted on route change — a floor
             reference plane that stays put through every transition so
@@ -65,6 +75,7 @@ export function PublicLayout() {
           <planeGeometry args={[200, 200]} />
           <meshStandardMaterial color={SCENE.ground} roughness={1} />
         </mesh>
+        <LandingAtmosphere />
 
         <CameraRig />
         <Suspense fallback={null}>
