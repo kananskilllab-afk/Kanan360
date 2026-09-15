@@ -195,3 +195,68 @@
     text-wrap: balance;
   }
 }
+
+/* Branch map (PublicMapHome.tsx) — Leaflet renders these as plain DOM,
+   outside React's styling reach for the library's own chrome, so the pin
+   and its hover card get hand-rolled CSS instead of Tailwind classes. */
+.branch-pin {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.branch-pin__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(138, 78, 26, 0.22);
+  animation: branch-pin-pulse 2.2s ease-out infinite;
+}
+.branch-pin__dot {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #8a4e1a;
+  border: 2px solid #fbf6ee;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease;
+}
+.branch-pin:hover .branch-pin__dot {
+  transform: scale(1.2);
+}
+@keyframes branch-pin-pulse {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.leaflet-tooltip.branch-tooltip {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+.leaflet-tooltip.branch-tooltip::before {
+  display: none;
+}
+.branch-tooltip-card {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 10px 24px rgba(27, 33, 29, 0.14);
+  backdrop-filter: blur(6px);
+  padding: 10px 12px;
+}
+
+.leaflet-control-attribution {
+  background: rgba(251, 246, 238, 0.85) !important;
+  color: #5b6259 !important;
+  font-family: var(--font-mono);
+  font-size: 10px !important;
+}
+.leaflet-control-attribution a {
+  color: #8a4e1a !important;
+}

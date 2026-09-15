@@ -1,8 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { AppLayout } from '@/layouts/AppLayout';
 import { PublicLayout } from '@/layouts/PublicLayout';
+import { PublicMapLayout } from '@/layouts/PublicMapLayout';
 import { AdminGate } from '@/components/auth/AdminGate';
-import { PublicHome } from '@/pages/public/PublicHome';
+import { PublicMapHome } from '@/pages/public/PublicMapHome';
 import { PublicBranch } from '@/pages/public/PublicBranch';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { BranchesPage } from '@/pages/BranchesPage';
@@ -15,13 +16,16 @@ import { SettingsPage } from '@/pages/SettingsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 export const router = createBrowserRouter([
-  // Public 3D site — no account, no auth check, ever.
+  // Public site — no account, no auth check, ever. The landing map and a
+  // branch's 3D floor are different enough experiences (real geography vs.
+  // an interactive model) that they get their own layouts/shells.
+  {
+    element: <PublicMapLayout />,
+    children: [{ path: '/', element: <PublicMapHome /> }],
+  },
   {
     element: <PublicLayout />,
-    children: [
-      { path: '/', element: <PublicHome /> },
-      { path: '/branch/:code', element: <PublicBranch /> },
-    ],
+    children: [{ path: '/branch/:code', element: <PublicBranch /> }],
   },
   // Admin console — the only authenticated surface in the app.
   {
